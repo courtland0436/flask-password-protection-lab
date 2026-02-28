@@ -7,25 +7,26 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String)
-    _password_hash = db.Column(db.String)
+    username = db.Column(db.String, unique=True, nullable=False)
+    _password_hash = db.Column(db.String, nullable=False)
 
-    # Build method to protect password_hash property
+    # Protect password_hash property
     @hybrid_property
     def password_hash(self):
-        pass
+        raise AttributeError("Password is write-only.")
 
-    # Build method to set password hash property using bcrypt.generate_password_hash()
+    # Set password hash property using bcrypt
     @password_hash.setter
     def password_hash(self, password):
-        pass
+        self._password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
 
-    # Build authenticate method that uses bcrypt.check_password_hash()
+    # Authenticate user
     def authenticate(self, password):
-        pass
+        return bcrypt.check_password_hash(self._password_hash, password)
 
     def __repr__(self):
         return f'User {self.username}, ID: {self.id}'
+
 
 class UserSchema(Schema):
     id = fields.Int()
